@@ -448,9 +448,8 @@ code {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 5%;
-  align-items: end;
+  align-items: center;
   min-height: 0;
-  padding-bottom: 2%;
 }
 
 .cover-side {
@@ -461,8 +460,14 @@ code {
 }
 
 .stamps-card {
-  align-items: flex-start;
-  gap: 0.7em;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85em;
+}
+
+.stamps-card .stamp-xl {
+  font-size: clamp(28px, 4.2cqw, 48px);
+  padding: 0.28em 0.9em;
 }
 
 .cover .mark {
@@ -627,7 +632,7 @@ code {
     margin: 0;
     box-shadow: none;
   }
-  .cols, .cols.three, .split, .tickets, .qa {
+  .cols, .cols.three, .split, .tickets, .qa, .cover-grid {
     grid-template-columns: 1fr;
   }
   .runbook, .runbook li { display: flex; flex-direction: column; }
