@@ -4,20 +4,13 @@
   const page = document.getElementById("page");
   const sec = document.getElementById("sec");
   const notesEl = document.getElementById("notes");
-  const hint = document.getElementById("hint");
   let index = 0;
   let step = 0;
-  let hintTimer = 0;
 
   const stepsOf = (n) => [...slides[n].querySelectorAll(".reveal > *")];
 
   const paintSteps = () => {
     stepsOf(index).forEach((el, k) => el.classList.toggle("in", k < step));
-    const hintEl = slides[index].querySelector(".walk-hint");
-    if (hintEl) {
-      const total = stepsOf(index).length;
-      hintEl.hidden = total === 0 || step >= total;
-    }
   };
 
   const go = (n, fromHash = false) => {
@@ -83,7 +76,6 @@
     if (e.key === "End") go(slides.length - 1);
     if (e.key === "f" || e.key === "F") toggleFull();
     if (e.key === "p" || e.key === "P") toggleNotes();
-    hideHintSoon();
   });
 
   document.getElementById("btn-full").addEventListener("click", toggleFull);
@@ -104,12 +96,6 @@
     else back();
   }, { passive: true });
 
-  const hideHintSoon = () => {
-    window.clearTimeout(hintTimer);
-    hintTimer = window.setTimeout(() => hint.classList.add("off"), 2400);
-  };
-
   addEventListener("hashchange", () => go(parseHash(), true));
   go(parseHash(), true);
-  hideHintSoon();
 })();

@@ -83,11 +83,17 @@ button {
   inset: 0;
   display: none;
   flex-direction: column;
-  padding: 7.2% 7.5% 9.5%;
-  gap: 3.2%;
+  padding: 6.4% 7% 8.6%;
+  gap: 3%;
 }
 
 .slide.on { display: flex; }
+.slide.say { justify-content: center; }
+.slide.say .eyebrow {
+  position: absolute;
+  top: 6.4%;
+  left: 7%;
+}
 
 .eyebrow {
   display: flex;
@@ -113,8 +119,9 @@ h1, h2 {
   line-height: 1.18;
 }
 
-h1 { font-size: clamp(30px, 5.4cqw, 62px); }
-h2 { font-size: clamp(26px, 4.2cqw, 46px); }
+h1 { font-size: clamp(34px, 5.8cqw, 68px); }
+h2 { font-size: clamp(28px, 4.6cqw, 50px); }
+.say h2 { font-size: clamp(32px, 5.2cqw, 58px); max-width: 16em; }
 
 .lead {
   margin: 0;
@@ -147,6 +154,11 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .stack {
   display: grid;
   gap: 2.4%;
+}
+
+.stack.room, .stack.tight {
+  flex: 1;
+  align-content: center;
 }
 
 .point {
@@ -185,7 +197,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3.2%;
+  gap: 2.8%;
   flex: 1;
   min-height: 0;
 }
@@ -196,8 +208,11 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 8% 9%;
+  padding: 7% 8%;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card h3 {
@@ -231,42 +246,40 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .card.stop h3 { color: var(--red-deep); }
 .card.go h3 { color: var(--green); }
 
-.spine {
+.runbook {
+  flex: 1;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.4%;
-  margin-top: 1%;
+  grid-template-rows: repeat(5, 1fr);
+  gap: 2.2%;
+  min-height: 0;
+  margin: 0;
 }
 
-.spine li {
+.runbook li {
+  display: grid;
+  grid-template-columns: 3.2em 8.5em 1fr;
+  align-items: center;
+  gap: 1em;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 14% 10% 16%;
-  position: relative;
+  padding: 0 1.4em;
 }
 
-.spine li:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -12%;
-  width: 10%;
-  height: 1px;
-  background: var(--line);
+.runbook em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--red);
+  font-size: clamp(16px, 2cqw, 22px);
 }
 
-.spine b {
-  display: block;
-  font-size: clamp(14px, 1.7cqw, 18px);
-  margin-bottom: 0.4em;
+.runbook b {
+  font-size: clamp(16px, 2cqw, 22px);
 }
 
-.spine span {
-  display: block;
+.runbook span {
   color: var(--quiet);
-  font-size: clamp(12px, 1.35cqw, 15px);
-  line-height: 1.4;
+  font-size: clamp(14px, 1.7cqw, 18px);
 }
 
 pre, code { font-family: var(--mono); }
@@ -356,21 +369,16 @@ code {
 }
 
 .reveal li {
-  opacity: 0.22;
-  transform: translateY(4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
   background: var(--card);
   border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
   border-radius: 12px;
   padding: 0.85em 1em;
   font-size: clamp(15px, 1.85cqw, 20px);
   line-height: 1.4;
 }
 
-.reveal li.in {
-  opacity: 1;
-  transform: none;
-}
+.reveal li.in { border-left-color: var(--red); }
 
 .stamp {
   display: inline-block;
@@ -400,9 +408,10 @@ code {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 10% 9%;
+  padding: 8% 9%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.55em;
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
@@ -432,9 +441,28 @@ code {
   line-height: 1.45;
 }
 
-.cover {
-  justify-content: flex-end;
-  padding-bottom: 10%;
+.cover { justify-content: stretch; }
+
+.cover-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 5%;
+  align-items: end;
+  min-height: 0;
+  padding-bottom: 2%;
+}
+
+.cover-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+  padding-bottom: 0.4em;
+}
+
+.stamps-card {
+  align-items: flex-start;
+  gap: 0.7em;
 }
 
 .cover .mark {
@@ -458,15 +486,21 @@ code {
 
 .take {
   display: grid;
+  grid-template-rows: repeat(3, 1fr);
   gap: 3%;
   flex: 1;
+  min-height: 0;
 }
 
 .take li {
   display: grid;
   grid-template-columns: 2.2em 1fr;
   gap: 1em;
-  align-items: start;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 1.2em;
 }
 
 .take .n {
@@ -491,7 +525,7 @@ code {
 .ask {
   font-size: clamp(28px, 4cqw, 44px);
   line-height: 1.25;
-  margin: 0;
+  margin: 1% 0 0;
   max-width: 16em;
 }
 
@@ -499,7 +533,18 @@ code {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3%;
-  margin-top: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.qa > div {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8% 9%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .qa h3 {
@@ -556,26 +601,23 @@ code {
 
 .notes.on { display: block; }
 
-.hint {
-  position: absolute;
-  top: 4.6%;
-  right: 7.5%;
-  color: var(--quiet);
-  font-size: clamp(11px, 1.25cqw, 13px);
-  z-index: 4;
-  transition: opacity 0.4s ease;
+.stamps {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin: 0.4em 0 0.2em;
 }
 
-.hint.off { opacity: 0; pointer-events: none; }
-
-.walk-hint {
-  position: absolute;
-  right: 7.5%;
-  bottom: 8.8%;
-  color: var(--quiet);
-  font-size: clamp(12px, 1.35cqw, 14px);
-  z-index: 3;
+.stamp-xl {
+  border-radius: 999px;
+  padding: 0.2em 0.85em;
+  font-size: clamp(22px, 3cqw, 34px);
+  font-weight: 700;
 }
+
+.stamp-xl.ok { background: var(--green-bg); color: var(--green); }
+.stamp-xl.wait { background: var(--amber-bg); color: var(--amber); }
+.stamps .or { color: var(--quiet); font-size: clamp(16px, 1.8cqw, 20px); }
 
 @media (max-width: 820px) {
   body { background: var(--paper); }
@@ -585,11 +627,14 @@ code {
     margin: 0;
     box-shadow: none;
   }
-  .cols, .cols.three, .split, .tickets, .qa, .spine {
+  .cols, .cols.three, .split, .tickets, .qa {
     grid-template-columns: 1fr;
   }
-  .spine li:not(:last-child)::after { display: none; }
+  .runbook, .runbook li { display: flex; flex-direction: column; }
+  .runbook { gap: 10px; }
   .slide { overflow: auto; padding: 18px 20px 72px; }
+  .slide.say { justify-content: flex-start; }
+  .slide.say .eyebrow { position: static; }
 }
 
 @media print {
@@ -608,7 +653,7 @@ code {
     overflow: visible;
   }
   .reveal li { opacity: 1; transform: none; }
-  .bar, .hint, .progress, .notes, .walk-hint { display: none; }
+  .bar, .progress, .notes { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -10,21 +10,24 @@
 <body>
   <div id="frame">
     <div class="progress" aria-hidden="true"><i id="progress"></i></div>
-    <div class="hint" id="hint">方向键翻页 · 空格下一步 · F 全屏 · P 备注</div>
-
     <main id="deck">
 
       <article class="slide cover on" data-sec="" data-notes="不比模型。今天讲怎么让 AI 写代码能连续跑、能复查、能关掉。">
         <div class="mark">分享</div>
-        <h1>AI 编程怎么真正跑起来</h1>
-        <div class="rule"></div>
-        <p class="lead">规则写进仓库。<br>Agent 按文件干活。</p>
-        <p class="sub">聊天窗口只办这一次。</p>
+        <div class="cover-grid">
+          <h1>AI 编程<br>怎么真正跑起来</h1>
+          <div class="cover-side">
+            <div class="rule"></div>
+            <p class="lead">规则写进仓库。</p>
+            <p class="lead">Agent 按文件干活。</p>
+            <p class="sub">聊天窗口只办这一次。</p>
+          </div>
+        </div>
       </article>
 
-      <article class="slide" data-sec="问题" data-notes="做三次还行。做三十次，规则会丢，单会停在请再验证。">
+      <article class="slide say" data-sec="问题" data-notes="做三次还行。做三十次，规则会丢，单会停在请再验证。">
         <div class="eyebrow"><span class="n">02</span>问题</div>
-        <h2>同一条规则，你已经讲了第三遍。</h2>
+        <h2>同一条规则，<br>你已经讲了第三遍。</h2>
         <p class="lead">它还是只活在聊天记录里。</p>
         <p class="sub">这不是模型不够强。是制度没有落盘。</p>
       </article>
@@ -70,22 +73,29 @@
       <article class="slide" data-sec="做法" data-notes="这张表就是后面三张假单要走的路。用手指从左扫到右。">
         <div class="eyebrow"><span class="n">05</span>做法</div>
         <h2>能连续跑的，是一张决策表。</h2>
-        <ol class="spine">
-          <li><b>进门</b><span>新反馈或开着的单</span></li>
-          <li><b>处没处理</b><span>看时间线，不看情绪</span></li>
-          <li><b>缺不缺信息</b><span>没版本、复现、期望就问</span></li>
-          <li><b>能不能看清</b><span>能就打一个类型标签</span></li>
-          <li><b>有没有钥匙</b><span>没有就停，有才开修</span></li>
+        <ol class="runbook">
+          <li><em>01</em><b>进门</b><span>新反馈或开着的单</span></li>
+          <li><em>02</em><b>处没处理</b><span>看时间线，不看情绪</span></li>
+          <li><em>03</em><b>缺不缺信息</b><span>没版本、复现、期望就问</span></li>
+          <li><em>04</em><b>能不能看清</b><span>能就打一个类型标签</span></li>
+          <li><em>05</em><b>有没有钥匙</b><span>没有就停，有才开修</span></li>
         </ol>
-        <p class="sub">Agent 先读仓库里的规则，再读匹配的 skill，再动手。改文件，行为跟着变。</p>
       </article>
 
       <article class="slide" data-sec="进门" data-notes="这是付过学费的一句。只看正文会把已上线的单重新实现一遍。">
         <div class="eyebrow"><span class="n">06</span>进门</div>
         <h2>第一句只问一件事。</h2>
-        <p class="lead">已处理，还是未处理。</p>
-        <p class="sub">看时间线、关联 PR、维护者备注、当前主线。不要只看用户正文。</p>
-        <p class="sub">只看正文，会把已经上线的单重新实现一遍。证据够了就关。用户不是回归测试。</p>
+        <div class="split">
+          <div class="card stamps-card">
+            <span class="stamp-xl ok">已处理</span>
+            <span class="or">或</span>
+            <span class="stamp-xl wait">未处理</span>
+          </div>
+          <div class="card">
+            <p>看时间线、关联 PR、维护者备注、当前主线。不要只看用户正文。</p>
+            <p class="more">只看正文，会把已经上线的单重新实现一遍。证据够了就关。用户不是回归测试。</p>
+          </div>
+        </div>
       </article>
 
       <article class="slide" data-sec="Skill" data-notes="打开 examples 里的 inbox-triage。description 是路由。">
@@ -101,14 +111,15 @@
 2. 缺信息就去三问
 3. 只打一个类型标签
 4. 开修不是这一步的事</pre>
-          <div class="stack mid">
-            <p class="lead">description 是路由。Agent 靠它决定开不开这个文件。</p>
-            <p class="sub">写清何时用、自动做什么、何时停。写意图，不要写下个月就会过期的工具参数。</p>
+          <div class="card">
+            <h3>description 是路由</h3>
+            <p>Agent 靠它决定开不开这个文件。</p>
+            <p class="more">写清何时用、自动做什么、何时停。写意图，不要写下个月就会过期的工具参数。</p>
           </div>
         </div>
       </article>
 
-      <article class="slide" data-sec="开关" data-notes="指着这一行：改文件就能从只报到动手。今天小心点不是开关。">
+      <article class="slide say" data-sec="开关" data-notes="指着这一行：改文件就能从只报到动手。今天小心点不是开关。">
         <div class="eyebrow"><span class="n">08</span>开关</div>
         <h2>动手必须有开关。</h2>
         <pre><span class="k">mode:</span> notify-only<span class="c">     # 只报，不动</span>
@@ -194,7 +205,6 @@
             <li>关单。评论：当前已经是这样了。不要「请再验证」。</li>
           </ol>
         </div>
-        <div class="walk-hint">→ 走下一步</div>
       </article>
 
       <article class="slide walk" data-sec="单 B" data-notes="未处理。看不清就问，不要猜补丁。">
@@ -217,7 +227,6 @@
             <li>三问：版本、怎么复现、你期望怎样。不要猜补丁。</li>
           </ol>
         </div>
-        <div class="walk-hint">→ 走下一步</div>
       </article>
 
       <article class="slide walk" data-sec="单 C" data-notes="能看懂只说明能分拣。没有钥匙不开修。">
@@ -239,7 +248,6 @@
             <li>停。开修的钥匙在标签和规则表里，不在「我看懂了」里。</li>
           </ol>
         </div>
-        <div class="walk-hint">→ 走下一步</div>
       </article>
 
       <article class="slide" data-sec="人" data-notes="自动的越多，这三道越要硬。合是人按的。">
@@ -318,6 +326,7 @@
     <footer class="bar">
       <span id="sec"></span>
       <span id="page">1 / 18</span>
+      <span>← → 翻页</span>
       <div class="ctrl">
         <button type="button" id="btn-notes">备注 P</button>
         <button type="button" id="btn-full">全屏 F</button>
