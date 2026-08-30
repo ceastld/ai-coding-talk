@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 编程怎么真正跑起来</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="hint">F 全屏 · → 空格 下一页 · P 备注</div>
+  <main id="deck">
+
+    <section class="slide on" data-act="1" data-notes="今天不比模型。讲怎么让 AI 写代码能连续跑、能复查、能关掉。">
+      <div class="kicker">分享</div>
+      <h1>AI 编程怎么真正跑起来</h1>
+      <p class="lead">不是多开几个聊天窗口。<br>是 <b>人写规则，Agent 按规则干活。</b></p>
+    </section>
+
+    <section class="slide" data-act="1" data-notes="聊天写代码做三次还行。做三十次，规则会丢，单会停在请再验证。">
+      <div class="kicker">开场</div>
+      <h2>今天不讲这些</h2>
+      <ul>
+        <li>哪个模型最强</li>
+        <li>Prompt 怎么写才「聪明」</li>
+        <li>替你生成一个完整产品</li>
+      </ul>
+      <p class="muted">讲流程：事情怎么进来、谁做、做到哪停、怎么复查。</p>
+    </section>
+
+    <section class="slide" data-act="1">
+      <div class="kicker">开场</div>
+      <h2>聊天写代码，撑不久</h2>
+      <ul>
+        <li><b>上下文会漂</b> — 同一个 bug 换窗口，规则重讲一遍</li>
+        <li><b>边界在人脑子里</b> — 「这个别自动关」只存在于某次对话</li>
+        <li><b>做完没法关单</b> — 没有已处理 / 未处理，只会永远「请再验证」</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="往下走一层，人就少说一遍。">
+      <div class="kicker">四层</div>
+      <h2>从人到系统</h2>
+      <ol>
+        <li><b>对话</b> — 这一次，把一件事做完</li>
+        <li><b>Skill</b> — 一种情况，一种做法</li>
+        <li><b>Automation</b> — 规则仓库。改文件，行为跟着变</li>
+        <li><b>产品也是 Agent</b> — 动作、MCP，别人也能接进来</li>
+      </ol>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第一层 · 对话</div>
+      <h2>一次对话只办一件事</h2>
+      <p>同一条 PR、同一个 bug，留在同一个会话。</p>
+      <p>目标变了就新开，第一条消息带锚点：PR 号、分支、约束。</p>
+      <p class="muted">不要让一个窗口同时改 CI、迁面板、讲跨平台。</p>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第一层 · 对话</div>
+      <h2>交给 Agent 的方式</h2>
+      <p>把 <b>问题和成功标准</b> 交给它。</p>
+      <p>不要把「根因在第 N 行，改成 Y」写死。猜的标成假设。</p>
+      <p class="muted">人只在不可逆的地方拍板：合并、对外口径、破坏性改动。</p>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="description 是路由。Agent 靠它决定开不开这个文件。">
+      <div class="kicker">第二层 · Skill</div>
+      <h2>一种情况，一种做法</h2>
+      <pre>---
+name: inbox-triage
+description: 新反馈还没分类时：先点名已处理 / 未处理，再打标。
+---
+# 步骤
+1. 先点名已处理或未处理
+2. …</pre>
+      <p>写清：何时用、自动做什么、何时停。写意图，不要写会死的工具参数。</p>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第二层 · Skill</div>
+      <h2>真的长这样</h2>
+      <div class="row">
+        <div class="card"><h3>issue-triage</h3><p class="muted">新 issue，或还没分拣</p></div>
+        <div class="card"><h3>need-more-info</h3><p class="muted">缺复现 / 版本 / 期望</p></div>
+        <div class="card"><h3>already-fixed</h3><p class="muted">当前代码已经没了 → 关单</p></div>
+        <div class="card"><h3>try-auto-fix</h3><p class="muted">带了 TryAutoFix，才允许开修</p></div>
+      </div>
+      <p class="muted">来源：qk-automation。规则覆盖的直接做。</p>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="改这一行就能从只报到动手。">
+      <div class="kicker">第三层 · Automation</div>
+      <h2>规则放仓库</h2>
+      <p>Agent 先读规则，再读匹配的 skill，再动手。改 markdown，不用再跟它嗨。</p>
+      <pre>mode: notify-only    # 只报，不动
+mode: apply-skills   # 按表真正动手</pre>
+      <p class="muted">监控可以一直跑。动手必须有开关。</p>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第三层 · Automation</div>
+      <h2>动手之前先点名</h2>
+      <p class="lead"><b>已处理 / 未处理。</b> 这是第一句话。</p>
+      <p>看时间线、关联 PR、维护者备注、当前主线。不要只看用户正文。</p>
+      <p>已经没了 → 关 issue。不要用「请再验证」收尾。</p>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第三层 · Automation</div>
+      <h2>能自动 vs 必须停</h2>
+      <div class="row">
+        <div class="card">
+          <h3>自动（不必问）</h3>
+          <ul>
+            <li>能看清的 bug / 需求 → 打标</li>
+            <li>缺信息 → 三问</li>
+            <li>已处理 → 关单</li>
+            <li>带 TryAutoFix 且改法局部 → 开修</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>必须停</h3>
+          <ul>
+            <li>要不要做这个需求</li>
+            <li>wontfix / 承诺版本号</li>
+            <li>数据格式、密钥、花钱</li>
+            <li>只为这一个关键词打补丁</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第三层 · Automation</div>
+      <h2>升级也要带球</h2>
+      <ol>
+        <li>已经做了什么（先点名已处理还是未处理）</li>
+        <li>建议怎么走：修 / 不修 / 等复现</li>
+        <li>反对时回哪一个词：「不修」「等下版」</li>
+      </ol>
+      <p class="muted">禁止只写：「先不改，等你定。」</p>
+    </section>
+
+    <section class="slide" data-act="2">
+      <div class="kicker">第四层</div>
+      <h2>产品自己也是 Agent</h2>
+      <ul>
+        <li><code>quicker_eval</code> — 跑 Host JS，不挂 chrome</li>
+        <li><code>actions.search / export / validate / import</code></li>
+        <li>写操作要开门；破坏性 API 即使开了门也拦</li>
+      </ul>
+      <p class="muted">本机 loopback + Bearer。默认关。测试可以在 Linux 上跑。</p>
+    </section>
+
+    <section class="slide" data-act="3" data-notes="点假工单。不要现场编规则。">
+      <div class="kicker">第三幕 · 现场走单</div>
+      <h2>三张假工单，当场走决策</h2>
+      <div class="tickets">
+        <button data-jump="14"><b>单 A</b><p class="muted">截图贴图卡死<br>相关 PR 已合进主线</p></button>
+        <button data-jump="15"><b>单 B</b><p class="muted">动作运行很慢<br>没版本、没复现</p></button>
+        <button data-jump="16"><b>单 C</b><p class="muted">面板搜索清空丢选中<br>步骤清楚</p></button>
+      </div>
+    </section>
+
+    <section class="slide walk" data-act="3" data-notes="第一句：已处理。关单。不要请再验证。">
+      <div class="kicker">单 A</div>
+      <h2>先看时间线，再开口</h2>
+      <div class="row">
+        <div>
+          <div class="card">
+            <h3>截图贴图会把窗口卡死</h3>
+            <p class="muted">2.x 里贴图之后鼠标动不了。相关开发 PR 已合进主线。当前已经没了。</p>
+          </div>
+          <p class="step" data-step="1">① 查时间线、关联 PR、当前主线</p>
+          <p class="step" data-step="2">② 第一句点名：<span class="badge ok">已处理</span></p>
+          <p class="step" data-step="3">③ 关单。评论：当前已经是这样了。</p>
+        </div>
+        <div class="card">
+          <h3>命中 already-done</h3>
+          <p>证据够了就关。<b>不要</b>「请再验证」。</p>
+        </div>
+      </div>
+      <p><button class="next-step ctrl" type="button" style="border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;cursor:pointer">走一步 →</button></p>
+    </section>
+
+    <section class="slide walk" data-act="3">
+      <div class="kicker">单 B</div>
+      <h2>看不清就先问</h2>
+      <div class="row">
+        <div>
+          <div class="card">
+            <h3>动作运行很慢</h3>
+            <p class="muted">有时候会卡一下。没有版本、没有复现、没有期望。</p>
+          </div>
+          <p class="step" data-step="1">① 点名：<span class="badge warn">未处理</span></p>
+          <p class="step" data-step="2">② 看不清类型 → need-more-info</p>
+          <p class="step" data-step="3">③ 三问：版本、怎么复现、期望怎样</p>
+        </div>
+        <div class="card">
+          <h3>不要猜补丁</h3>
+          <p>缺这三样就不要分拣，更不要开修。</p>
+        </div>
+      </div>
+      <p><button type="button" style="border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;cursor:pointer">走一步 →</button></p>
+    </section>
+
+    <section class="slide walk" data-act="3">
+      <div class="kicker">单 C</div>
+      <h2>能看清也不等于开修</h2>
+      <div class="row">
+        <div>
+          <div class="card">
+            <h3>面板搜索清空后选中项丢了</h3>
+            <p class="muted">打开面板 → 搜「截图」→ 清空搜索框，原来高亮没了。当前预览。</p>
+          </div>
+          <p class="step" data-step="1">① 点名：<span class="badge warn">未处理</span></p>
+          <p class="step" data-step="2">② inbox-triage 打 <code>bug</code></p>
+          <p class="step" data-step="3">③ 停在摘要。没有 TryAutoFix，不开修</p>
+        </div>
+        <div class="card">
+          <h3>开修的钥匙不在聊天里</h3>
+          <p>在标签和规则表。能看懂只说明能分拣。</p>
+        </div>
+      </div>
+      <p><button type="button">走一步 →</button></p>
+    </section>
+
+    <section class="slide" data-act="4">
+      <div class="kicker">第四幕 · 动作</div>
+      <h2>人是按钮，Skill 是做法</h2>
+      <div class="row">
+        <div class="card">
+          <h3>动作 A · 扔给分拣</h3>
+          <p>选中一段反馈 + 热键。出口：建议标签 + 一句人话。默认不改线上 issue。</p>
+        </div>
+        <div class="card">
+          <h3>动作 B · 会前一页纸</h3>
+          <p>按 meeting-brief 生成一页能念的提纲。只写给自己，没有写进别人仓库的负担。</p>
+        </div>
+      </div>
+      <p class="muted">聊天窗口不再是唯一入口。</p>
+    </section>
+
+    <section class="slide" data-act="5">
+      <div class="kicker">第五幕 · 真事</div>
+      <h2>审查机器人不是合并闸</h2>
+      <p>自动审查会看旧文档，把合法字段打成错误。也会抓到真的数据丢失。</p>
+      <p class="lead">瞥一眼，不当自动闸。合之前人看合同，不看语气。</p>
+    </section>
+
+    <section class="slide" data-act="5">
+      <div class="kicker">第五幕 · 真事</div>
+      <h2>损坏的信封不能当正文写盘</h2>
+      <p><code>write_file</code> 的 payload 以 <code>@@</code> 开头但头是坏的。当原文写就会覆盖目标文件。</p>
+      <p>看起来像信封就 <b>拒绝</b>，清掉半成品正文。自动层越能干，拒绝路径越要干净。</p>
+    </section>
+
+    <section class="slide" data-act="5">
+      <div class="kicker">第五幕 · 真事</div>
+      <h2>Agent 契约要能离开 Windows</h2>
+      <p>鉴权、eval、写门禁、导入导出如果只能在 Windows testhost 里跑，云端就测不了。</p>
+      <p>把 live 装配和可测核心拆开。<code>dotnet test</code> 在 Linux 过了，再合进主线。</p>
+    </section>
+
+    <section class="slide" data-act="6">
+      <div class="kicker">带走</div>
+      <h2>三句话</h2>
+      <ol>
+        <li>一种情况，一个 Skill。写清何时停。</li>
+        <li>规则放仓库。改文件，不要改聊天记录。</li>
+        <li>先点名已处理 / 未处理。已经没了就关，不要请人再验证。</li>
+      </ol>
+    </section>
+
+    <section class="slide" data-act="6" data-notes="问：你们现在哪一层还停在聊天记录里？">
+      <div class="kicker">Q&amp;A</div>
+      <h2>常被问到的两件事</h2>
+      <div class="qa">
+        <button type="button">停在聊天里怎么办？
+          <div class="a">把重复出现的做法写成 Skill，把「能不能动手」写成仓库里的一行开关。下次不要靠把旧聊天翻出来。</div>
+        </button>
+        <button type="button">能不能全自动合？
+          <div class="a">不能。Agent 可以开 PR。合并、对外口径、破坏数据格式，还是人按。审查可以看，不当闸。</div>
+        </button>
+      </div>
+    </section>
+  </main>
+  <div class="notes" id="notes"></div>
+  <div class="bar">
+    <span id="page" class="muted">1</span>
+    <div class="dots" id="dots"></div>
+    <div class="ctrl">
+      <button type="button" id="btn-notes">备注 P</button>
+      <button type="button" id="btn-full">全屏 F</button>
+    </div>
+  </div>
+  <script src="deck.js"></script>
+</body>
+</html>
