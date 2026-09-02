@@ -3,335 +3,206 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI 编程怎么真正跑起来</title>
-  <meta name="description" content="规则写进仓库，Agent 按文件干活。一次关于流程、停点和关单的分享。" />
+  <title>设计 Agent Loop</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="frame">
-    <div class="progress" aria-hidden="true"><i id="progress"></i></div>
-    <main id="deck">
+  <div class="hint">F 全屏 · → 空格 下一页 · P 备注</div>
+  <main id="deck">
 
-      <article class="slide cover on" data-sec="" data-notes="不比模型。今天讲怎么让 AI 写代码能连续跑、能复查、能关掉。">
-        <div class="mark">分享</div>
-        <div class="cover-grid">
-          <h1>AI 编程<br>怎么真正跑起来</h1>
-          <div class="cover-side">
-            <div class="rule"></div>
-            <p class="lead">规则写进仓库。</p>
-            <p class="lead">Agent 按文件干活。</p>
-            <p class="sub">聊天窗口只办这一次。</p>
-          </div>
-        </div>
-      </article>
+    <section class="slide on" data-act="1" data-notes="开场只立一件事：自动化写代码靠循环，不靠聊天。">
+      <div class="kicker">分享</div>
+      <h1>设计 Agent Loop</h1>
+      <p class="lead">自动化写代码，不是一次生成。<br>是 <b>Plan → Implement → Check</b>，过了才 <b>Accept</b>。</p>
+    </section>
 
-      <article class="slide say" data-sec="问题" data-notes="做三次还行。做三十次，规则会丢，单会停在请再验证。">
-        <div class="eyebrow"><span class="n">02</span>问题</div>
-        <h2>同一条规则，<br>你已经讲了第三遍。</h2>
-        <p class="lead">它还是只活在聊天记录里。</p>
-        <p class="sub">这不是模型不够强。是制度没有落盘。</p>
-      </article>
+    <section class="slide" data-act="1" data-notes="把旧话题直接裁掉。今天只讲框架接口。">
+      <div class="kicker">范围</div>
+      <h2>今天只讲框架</h2>
+      <ul>
+        <li>不比模型，不教 prompt</li>
+        <li>不讲「AI 替你做完整产品」</li>
+        <li>不堆 skill、工单、产品细节</li>
+      </ul>
+      <p class="muted">只讲循环怎么接：每一步进出什么、失败回哪、谁有权写入仓库。</p>
+    </section>
 
-      <article class="slide" data-sec="范围" data-notes="先把今天不讲的钉死，避免被模型评测带跑。">
-        <div class="eyebrow"><span class="n">03</span>范围</div>
-        <h2>今天不评模型，不教 prompt。</h2>
-        <div class="stack room">
-          <div class="point">
-            <span class="idx">1</span>
-            <div><b>事情怎么进门</b><p>新反馈、开着的单、选中的一段话。</p></div>
-          </div>
-          <div class="point">
-            <span class="idx">2</span>
-            <div><b>谁做，做到哪必须停</b><p>能自动的别问。不该自动的别做。</p></div>
-          </div>
-          <div class="point">
-            <span class="idx">3</span>
-            <div><b>怎样算做完</b><p>已处理就关。不要请人再验证。</p></div>
-          </div>
-        </div>
-      </article>
+    <section class="slide" data-act="1" data-notes="聊天缺的是可判定的检查，和进仓库的门。">
+      <div class="kicker">问题</div>
+      <h2>聊天写代码，缺的是循环</h2>
+      <p>写了 → 看起来对 → 丢进仓库。</p>
+      <ul>
+        <li>没有计划，成功标准只在人脑子里</li>
+        <li>没有机器能判的 Check，环关不上</li>
+        <li>没有 Accept 门禁，半成品也能进主线</li>
+      </ul>
+    </section>
 
-      <article class="slide" data-sec="问题" data-notes="三个都能在自己仓库里对号入座。不要展开成故事。">
-        <div class="eyebrow"><span class="n">04</span>问题</div>
-        <h2>聊天当流程，撑不久。</h2>
-        <div class="cols three">
-          <div class="card">
-            <h3>换窗口等于换制度</h3>
-            <p>同一个 bug 开三个会话，边界重讲三遍。第三遍已经和第一遍不一样。</p>
-          </div>
-          <div class="card">
-            <h3>没写下来的禁令等于没有</h3>
-            <p>「这个别自动关」只存在于某次对话。下次 Agent 照关。</p>
-          </div>
-          <div class="card">
-            <h3>做完的单关不掉</h3>
-            <p>「请再验证」把用户变成测试员。队列只增不减。</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="slide" data-sec="做法" data-notes="这张表就是后面三张假单要走的路。用手指从左扫到右。">
-        <div class="eyebrow"><span class="n">05</span>做法</div>
-        <h2>能连续跑的，是一张决策表。</h2>
-        <ol class="runbook">
-          <li><em>01</em><b>进门</b><span>新反馈或开着的单</span></li>
-          <li><em>02</em><b>处没处理</b><span>看时间线，不看情绪</span></li>
-          <li><em>03</em><b>缺不缺信息</b><span>没版本、复现、期望就问</span></li>
-          <li><em>04</em><b>能不能看清</b><span>能就打一个类型标签</span></li>
-          <li><em>05</em><b>有没有钥匙</b><span>没有就停，有才开修</span></li>
-        </ol>
-      </article>
-
-      <article class="slide" data-sec="进门" data-notes="这是付过学费的一句。只看正文会把已上线的单重新实现一遍。">
-        <div class="eyebrow"><span class="n">06</span>进门</div>
-        <h2>第一句只问一件事。</h2>
-        <div class="split">
-          <div class="card stamps-card">
-            <span class="stamp-xl ok">已处理</span>
-            <span class="or">或</span>
-            <span class="stamp-xl wait">未处理</span>
-          </div>
-          <div class="card">
-            <p>看时间线、关联 PR、维护者备注、当前主线。不要只看用户正文。</p>
-            <p class="more">只看正文，会把已经上线的单重新实现一遍。证据够了就关。用户不是回归测试。</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="slide" data-sec="Skill" data-notes="打开 examples 里的 inbox-triage。description 是路由。">
-        <div class="eyebrow"><span class="n">07</span>Skill</div>
-        <h2>一种情况，一种做法。</h2>
-        <div class="split">
-          <pre><span class="c">---</span>
-<span class="k">name:</span> inbox-triage
-<span class="k">description:</span> 新反馈还没分类时：
-  先点名已处理 / 未处理，再打标。
-<span class="c">---</span>
-1. 先点名已处理或未处理
-2. 缺信息就去三问
-3. 只打一个类型标签
-4. 开修不是这一步的事</pre>
-          <div class="card">
-            <h3>description 是路由</h3>
-            <p>Agent 靠它决定开不开这个文件。</p>
-            <p class="more">写清何时用、自动做什么、何时停。写意图，不要写下个月就会过期的工具参数。</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="slide say" data-sec="开关" data-notes="指着这一行：改文件就能从只报到动手。今天小心点不是开关。">
-        <div class="eyebrow"><span class="n">08</span>开关</div>
-        <h2>动手必须有开关。</h2>
-        <pre><span class="k">mode:</span> notify-only<span class="c">     # 只报，不动</span>
-<span class="k">mode:</span> apply-skills<span class="c">    # 按表真正动手</span></pre>
-        <p class="lead">「今天小心点」不是开关。</p>
-        <p class="sub">监控可以一直跑。写入 tracker 必须显式拨档。</p>
-      </article>
-
-      <article class="slide" data-sec="边界" data-notes="左边是机器的。右边是人还要在的理由。开修的钥匙在标签和规则表，不在语气里。">
-        <div class="eyebrow"><span class="n">09</span>边界</div>
-        <h2>能自动的别问。不该自动的别做。</h2>
-        <div class="cols">
-          <div class="card go">
-            <h3>自动，不必问</h3>
-            <ul>
-              <li>能看清的 bug / 需求 / 问题 → 打一个类型标签</li>
-              <li>缺版本、复现、期望 → 固定三问</li>
-              <li>主线已经没了 → 关单</li>
-              <li>带了开修钥匙，且改法局部 → 才开修</li>
-            </ul>
-          </div>
-          <div class="card stop">
-            <h3>必须停</h3>
-            <ul>
-              <li>要不要做这个需求</li>
-              <li>wontfix、对外承诺版本号</li>
-              <li>改数据格式、动密钥、花钱</li>
-              <li>只为这一个关键词打补丁</li>
-            </ul>
-          </div>
-        </div>
-      </article>
-
-      <article class="slide" data-sec="升级" data-notes="升级是带判断上去，不是把球踢回去。可以举：不修、等下版。">
-        <div class="eyebrow"><span class="n">10</span>升级</div>
-        <h2>升级也要带球，不能把球踢回去。</h2>
-        <div class="stack tight">
-          <div class="point"><span class="idx">1</span><div><b>已经做了什么</b><p>先点名已处理还是未处理。</p></div></div>
-          <div class="point"><span class="idx">2</span><div><b>建议怎么走</b><p>修 / 不修 / 等复现，三选一。</p></div></div>
-          <div class="point"><span class="idx">3</span><div><b>反对时回哪一个词</b><p>「不修」「等下版」。让人能直接回。</p></div></div>
-        </div>
-        <p class="sub">禁止只写：「先不改，等你定。」那是把判断踢回去，不是升级。</p>
-      </article>
-
-      <article class="slide" data-sec="走单" data-notes="点假工单。不要现场编规则。假单已经写死。">
-        <div class="eyebrow"><span class="n">11</span>走单</div>
-        <h2>三张假工单，当场走这张表。</h2>
-        <div class="tickets">
-          <button type="button" data-go="12">
-            <span class="who">单 A</span>
-            <b>截图贴图会把窗口卡死</b>
-            <p>相关开发 PR 已合进主线。当前已经没了。</p>
-          </button>
-          <button type="button" data-go="13">
-            <span class="who">单 B</span>
-            <b>动作运行很慢</b>
-            <p>有时候会卡一下。没版本、没复现、没期望。</p>
-          </button>
-          <button type="button" data-go="14">
-            <span class="who">单 C</span>
-            <b>面板搜索清空后选中丢了</b>
-            <p>步骤清楚，版本是当前预览。没有开修钥匙。</p>
-          </button>
-        </div>
-      </article>
-
-      <article class="slide walk" data-sec="单 A" data-notes="第一句：已处理。关单。不要请再验证。">
-        <div class="eyebrow"><span class="n">12</span>单 A</div>
-        <h2>先看时间线，再开口。</h2>
-        <div class="split">
-          <div class="issue">
-            <div class="issue-meta"><span class="stamp open">Open</span> 用户反馈</div>
-            <h3>截图贴图会把窗口卡死</h3>
-            <p class="body">2.x 里贴图之后鼠标动不了。</p>
-            <dl class="facts">
-              <div><dt>时间线</dt><dd>相关开发 PR 已合进主线</dd></div>
-              <div><dt>当前主线</dt><dd>这个卡死已经不在了</dd></div>
-            </dl>
-          </div>
-          <ol class="reveal">
-            <li>查时间线、关联 PR、当前主线。不查情绪。</li>
-            <li>第一句点名：<span class="stamp ok">已处理</span></li>
-            <li>关单。评论：当前已经是这样了。不要「请再验证」。</li>
-          </ol>
-        </div>
-      </article>
-
-      <article class="slide walk" data-sec="单 B" data-notes="未处理。看不清就问，不要猜补丁。">
-        <div class="eyebrow"><span class="n">13</span>单 B</div>
-        <h2>看不清就先问。</h2>
-        <div class="split">
-          <div class="issue">
-            <div class="issue-meta"><span class="stamp open">Open</span> 用户反馈</div>
-            <h3>动作运行很慢</h3>
-            <p class="body">有时候会卡一下。</p>
-            <dl class="facts">
-              <div><dt>版本</dt><dd>没有</dd></div>
-              <div><dt>复现</dt><dd>没有</dd></div>
-              <div><dt>期望</dt><dd>没有</dd></div>
-            </dl>
-          </div>
-          <ol class="reveal">
-            <li>点名：<span class="stamp wait">未处理</span></li>
-            <li>看不清类型 → <code>need-more-info</code></li>
-            <li>三问：版本、怎么复现、你期望怎样。不要猜补丁。</li>
-          </ol>
-        </div>
-      </article>
-
-      <article class="slide walk" data-sec="单 C" data-notes="能看懂只说明能分拣。没有钥匙不开修。">
-        <div class="eyebrow"><span class="n">14</span>单 C</div>
-        <h2>能看清，也不等于开修。</h2>
-        <div class="split">
-          <div class="issue">
-            <div class="issue-meta"><span class="stamp open">Open</span> 当前预览</div>
-            <h3>面板搜索清空后选中项丢了</h3>
-            <p class="body">打开面板 → 搜「截图」→ 清空搜索框，原来高亮的项没了。</p>
-            <dl class="facts">
-              <div><dt>类型</dt><dd>步骤清楚，能看成 bug</dd></div>
-              <div><dt>钥匙</dt><dd>没有 TryAutoFix，也没有人点头</dd></div>
-            </dl>
-          </div>
-          <ol class="reveal">
-            <li>点名：<span class="stamp wait">未处理</span></li>
-            <li><code>inbox-triage</code> 打 <code>bug</code>，写一句摘要。</li>
-            <li>停。开修的钥匙在标签和规则表里，不在「我看懂了」里。</li>
-          </ol>
-        </div>
-      </article>
-
-      <article class="slide" data-sec="人" data-notes="自动的越多，这三道越要硬。合是人按的。">
-        <div class="eyebrow"><span class="n">15</span>人还在</div>
-        <h2>自动的越多，这三道越要硬。</h2>
-        <div class="stack tight">
-          <div class="point"><span class="idx">1</span><div><b>合并</b><p>Agent 可以开 PR。合是人按的。</p></div></div>
-          <div class="point"><span class="idx">2</span><div><b>对外口径</b><p>不承诺版本号，不把源码贴进用户评论。</p></div></div>
-          <div class="point"><span class="idx">3</span><div><b>产品取舍</b><p>默认值、互斥、否过的方向，只升级，不让 Agent 拍板。</p></div></div>
-        </div>
-      </article>
-
-      <article class="slide" data-sec="学费" data-notes="两个真事各一分钟。审查当参谋不当闸。看起来像信封就拒绝。">
-        <div class="eyebrow"><span class="n">16</span>学费</div>
-        <h2>自动层越能干，拒绝越要干净。</h2>
-        <div class="cols">
-          <div class="card">
-            <h3>审查绿了 ≠ 能合</h3>
-            <p>自动审查对照旧文档，把当时合法的 CI 字段打成错误。同系列里，它也抓到过真的数据丢失。</p>
-            <p class="more">瞥一眼，核合同，人决定。审查当参谋，不当闸。</p>
-          </div>
-          <div class="card">
-            <h3>看起来像信封就拒绝</h3>
-            <p><code>write_file</code> 的 payload 以 <code>@@</code> 开头，但头是坏的。当原文写，目标文件被覆盖。</p>
-            <p class="more">不要更聪明地猜。拒收，清半成品，用测试锁住「坏信封不得改磁盘」。</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="slide" data-sec="带走" data-notes="念三句。停一下。本仓 examples 可以当场翻。">
-        <div class="eyebrow"><span class="n">17</span>带走</div>
-        <h2>这周就能做的三件事。</h2>
-        <ol class="take">
-          <li>
-            <span class="n">1</span>
-            <div>
-              <b>把讲过两遍的做法写成 Skill</b>
-              <p>一种情况一个目录。写清何时停。</p>
-            </div>
-          </li>
-          <li>
-            <span class="n">2</span>
-            <div>
-              <b>仓库里加一行开关</b>
-              <p>只报 / 动手。不要靠「今天小心点」。</p>
-            </div>
-          </li>
-          <li>
-            <span class="n">3</span>
-            <div>
-              <b>关单标准写成一句话</b>
-              <p>已处理就关。不要请人再验证。</p>
-            </div>
-          </li>
-        </ol>
-      </article>
-
-      <article class="slide" data-sec="问" data-notes="问：你们现在哪一层还停在聊天记录里？然后停。">
-        <div class="eyebrow"><span class="n">18</span>问一句</div>
-        <p class="ask">你们现在哪一层，还停在聊天记录里？</p>
-        <div class="qa">
-          <div>
-            <h3>停在聊天里怎么办？</h3>
-            <p>把重复的做法写成 Skill，把能不能动手写成仓库里的一行。下次不要翻旧聊天。</p>
-          </div>
-          <div>
-            <h3>能不能全自动合？</h3>
-            <p>不能。Agent 开 PR。合并、对外口径、破坏数据格式，还是人按。</p>
-          </div>
-        </div>
-      </article>
-
-    </main>
-
-    <aside class="notes" id="notes"></aside>
-    <footer class="bar">
-      <span id="sec"></span>
-      <span id="page">1 / 18</span>
-      <span>← → 翻页</span>
-      <div class="ctrl">
-        <button type="button" id="btn-notes">备注 P</button>
-        <button type="button" id="btn-full">全屏 F</button>
+    <section class="slide" data-act="2" data-notes="先把内环画在空中。Check 红了先回 Implement，计划错了才回 Plan。">
+      <div class="kicker">内环</div>
+      <h2>本地把一件事做完</h2>
+      <div class="flow">
+        <div class="box">Plan</div>
+        <span class="arr">→</span>
+        <div class="box">Implement</div>
+        <span class="arr">→</span>
+        <div class="box check">Check</div>
+        <span class="arr">→</span>
+        <div class="box accept">Accept</div>
       </div>
-    </footer>
+      <p class="cycle">Check 不过 → 回到 Implement；计划错了 → 回到 Plan</p>
+      <p class="muted">Accept 之前，仓库当没发生过。</p>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="四格各干一件事。不要让 Implement 顺便改计划，也不要让 Check 自己改代码。">
+      <div class="kicker">内环</div>
+      <h2>四格各自只做一件事</h2>
+      <div class="grid4">
+        <div class="card">
+          <h3>Plan</h3>
+          <p>边界、成功标准、动哪些文件。输出是计划，不是代码。</p>
+        </div>
+        <div class="card">
+          <h3>Implement</h3>
+          <p>只执行计划，产出 diff。不扩 scope。</p>
+        </div>
+        <div class="card">
+          <h3>Check</h3>
+          <p>用命令判定过 / 不过，留下证据。自己不改代码。</p>
+        </div>
+        <div class="card">
+          <h3>Accept</h3>
+          <p>门禁过了，才 commit。这是进仓库的唯一口。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="Check 是环能不能转的关键。自评、人眼、无限重试，环都是假的。">
+      <div class="kicker">内环</div>
+      <h2>Check 必须是机器能判的</h2>
+      <ul>
+        <li>测试、类型检查、复现命令、Plan 里写死的成功标准</li>
+        <li>「看起来对」「模型自评」关不上环</li>
+        <li>要有预算：N 次失败就停，不要死循环</li>
+      </ul>
+      <p class="muted">过 / 不过是命令的退出码，不是感觉。</p>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="失败分流先写死，否则 Agent 会在同一处空转，或偷偷改需求。">
+      <div class="kicker">内环</div>
+      <h2>失败回哪，先写死</h2>
+      <div class="row">
+        <div class="card">
+          <h3>回 Implement</h3>
+          <p>Check 红了，但计划还成立。再改，不改目标。</p>
+        </div>
+        <div class="card">
+          <h3>回 Plan</h3>
+          <p>做不下去、范围错了、成功标准本身错。先重画，再动手。</p>
+        </div>
+      </div>
+      <p>超预算，或碰到破坏数据 / 对外承诺 → <b>停，给人</b>。</p>
+    </section>
+
+    <section class="slide" data-act="2" data-notes="Accept 不是『写完了』，是『门禁过了才进仓』。合主线仍是人。">
+      <div class="kicker">内环</div>
+      <h2>Accept 是唯一进仓库的口</h2>
+      <ul>
+        <li>前面都是草稿：可以扔，可以重来</li>
+        <li>过门禁才 commit，不要边写边往 main 上堆</li>
+        <li>人守不可逆的：合主线、对外口径、破坏性改动</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-act="3" data-notes="外环把内环接到仓库工作流。Agent 的 Accept 停在 PR。">
+      <div class="kicker">外环</div>
+      <h2>Issue 回到 PR</h2>
+      <div class="stack">
+        <div class="flow">
+          <div class="box">Issue</div>
+          <span class="arr">→</span>
+          <div class="box">信息够不够</div>
+          <span class="arr">→</span>
+          <div class="box">内环（分支上）</div>
+          <span class="arr">→</span>
+          <div class="box accept">PR</div>
+        </div>
+        <p class="cycle">CI 再跑一轮 Check → 人 Merge</p>
+      </div>
+      <p class="muted">Agent 的 Accept 停在 PR。Merge 是仓库级 Accept，默认是人。</p>
+    </section>
+
+    <section class="slide" data-act="3" data-notes="两环套在一起：内环做对代码，外环把事从 issue 送到可审查的 PR。">
+      <div class="kicker">对照</div>
+      <h2>两个环套在一起</h2>
+      <div class="row">
+        <div class="card">
+          <h3>内环</h3>
+          <p>把一件代码做对。<br>出口是过门禁的 commit。</p>
+        </div>
+        <div class="card">
+          <h3>外环</h3>
+          <p>把仓库里的一件事做完。<br>出口是可审查的 PR，不是「已经合进主线」。</p>
+        </div>
+      </div>
+      <p class="muted">外环里的 CI，就是多一轮 Check。PR 开了 ≠ 做完了。</p>
+    </section>
+
+    <section class="slide" data-act="4" data-notes="设计清单四问。先画图，再写 skill / prompt。">
+      <div class="kicker">怎么设计</div>
+      <h2>先钉死这四问</h2>
+      <ol>
+        <li>这一步的 <b>输入 / 输出</b> 是什么？</li>
+        <li><b>失败回哪</b>一步？</li>
+        <li>怎么用 <b>命令判定结束</b>？</li>
+        <li>谁有权 <b>Accept</b>？</li>
+      </ol>
+      <p class="muted">先画循环，再写 skill，再写 prompt。</p>
+    </section>
+
+    <section class="slide" data-act="4" data-notes="反模式用来对照。这些环看起来在转，其实没有门。">
+      <div class="kicker">反模式</div>
+      <h2>这样设计，环是假的</h2>
+      <ul>
+        <li>没 Check 就 Accept</li>
+        <li>Check 靠人眼，或模型自评</li>
+        <li>无限重试</li>
+        <li>Issue 直接 Implement，跳过 Plan</li>
+        <li>Agent 自己合主线</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-act="5" data-notes="收束。停下来问：你们现在的写代码 Agent，哪一格是空的？">
+      <div class="kicker">带走</div>
+      <h2>三句话</h2>
+      <ol>
+        <li>自动化写代码 = 设计循环，不是堆对话。</li>
+        <li>内环：Plan → Implement → Check ↺ → Accept。</li>
+        <li>外环：Issue → 内环 → PR → 人合。</li>
+      </ol>
+    </section>
+
+    <section class="slide" data-act="5" data-notes="两问够了。不要再展开成产品分享。">
+      <div class="kicker">Q&amp;A</div>
+      <h2>常被问到的两件事</h2>
+      <div class="qa">
+        <button type="button">小改也能跳过 Plan 吗？
+          <div class="a">计划可以很短，但不能没有成功标准。没有标准，Check 就不知道什么叫过。</div>
+        </button>
+        <button type="button">CI 绿了能不能自动合？
+          <div class="a">CI 只是外环多一轮 Check。合主线是仓库级 Accept，默认仍是人。</div>
+        </button>
+      </div>
+    </section>
+  </main>
+  <div class="notes" id="notes"></div>
+  <div class="bar">
+    <span id="page" class="muted">1</span>
+    <div class="dots" id="dots"></div>
+    <div class="ctrl">
+      <button type="button" id="btn-notes">备注 P</button>
+      <button type="button" id="btn-full">全屏 F</button>
+    </div>
   </div>
   <script src="deck.js"></script>
 </body>
